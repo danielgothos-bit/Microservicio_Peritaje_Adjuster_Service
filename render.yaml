@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: adjuster-service
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # Pegar la "Internal Database URL" de payment-db (servidor PostgreSQL compartido).
+      - key: DATABASE_URL
+        sync: false
+      # Base propia del microservicio dentro de ese servidor (se crea sola).
+      - key: DB_NAME
+        value: adjuster_db
+      # Pegar la "Internal Key Value URL" de payment-redis (Redis compartido).
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEBUG
+        value: "0"
+      - key: RUN_WORKER_IN_WEB
+        value: "1"

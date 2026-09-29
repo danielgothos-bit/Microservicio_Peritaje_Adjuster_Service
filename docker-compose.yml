@@ -1,0 +1,34 @@
+services:
+  adjuster_service:
+    build: .
+    container_name: adjuster_service
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: adjuster_service.settings
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/adjuster_db
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16
+    container_name: adjuster_db
+    environment:
+      POSTGRES_DB: adjuster_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: adjuster_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
