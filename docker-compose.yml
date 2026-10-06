@@ -5,9 +5,25 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DJANGO_SETTINGS_MODULE: adjuster_service.settings
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/adjuster_db
       REDIS_URL: redis://redis:6379/0
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      - postgres
+      - redis
+
+  adjuster_worker:
+    build: .
+    container_name: adjuster_worker
+    command: celery -A comun.celery_app worker -Q adjuster --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/adjuster_db
+      REDIS_URL: redis://redis:6379/0
+    env_file:
+      - path: .env
+        required: false
     depends_on:
       - postgres
       - redis

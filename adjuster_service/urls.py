@@ -1,16 +1,9 @@
-from django.urls import path
-from peritaje.views import (
-    health,
-    disponibilidad,
-    inspecciones,
-    inspeccion_informe,
-    inspecciones_por_perito,
-)
+from django.urls import include, path
+
+from comun.views import health, recibir_evento
 
 urlpatterns = [
     path("health", health),
-    path("api/v1/peritos/disponibilidad", disponibilidad),
-    path("api/v1/inspecciones", inspecciones),
-    path("api/v1/inspecciones/<int:id>/informe", inspeccion_informe),
-    path("api/v1/inspecciones/perito/<int:id>", inspecciones_por_perito),
+    path("api/v1/eventos", recibir_evento),
+    path("", include("peritaje.urls")),
 ]

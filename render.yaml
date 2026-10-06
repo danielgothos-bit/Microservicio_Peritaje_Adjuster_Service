@@ -5,18 +5,41 @@ services:
     plan: free
     healthCheckPath: /health
     envVars:
-      # Pegar la "Internal Database URL" de payment-db (servidor PostgreSQL compartido).
       - key: DATABASE_URL
-        sync: false
-      # Base propia del microservicio dentro de ese servidor (se crea sola).
-      - key: DB_NAME
-        value: adjuster_db
-      # Pegar la "Internal Key Value URL" de payment-redis (Redis compartido).
+        fromDatabase:
+          name: adjuster-db
+          property: connectionString
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: keyvalue
+          name: adjuster-redis
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
+      # Mismo valor en TODOS los microservicios (autentica la entrega de eventos).
+      - key: INTERNAL_TOKEN
+        sync: false
       - key: DEBUG
         value: "0"
       - key: RUN_WORKER_IN_WEB
         value: "1"
+      # Los servicios gratis tardan ~1 minuto en despertar.
+      - key: SYNC_TIMEOUT
+        value: "60"
+      # URL pública del microservicio de Siniestros (ej: https://claims-service-xxxx.onrender.com)
+      - key: CLAIMS_SERVICE_URL
+        sync: false
+      # URL pública del microservicio de Documentación (ej: https://document-service-xxxx.onrender.com)
+      - key: DOCUMENT_SERVICE_URL
+        sync: false
+
+  - type: keyvalue
+    name: adjuster-redis
+    plan: free
+    ipAllowList: []
+
+databases:
+  - name: adjuster-db
+    databaseName: adjuster_db
+    user: adjuster_user
+    plan: free

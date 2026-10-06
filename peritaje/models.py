@@ -1,7 +1,12 @@
+import uuid
+
 from django.db import models
+from django.db.models import Q
 
 
 class Perito(models.Model):
+    id_perito = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nombre = models.CharField(max_length=150)
     especialidad = models.CharField(max_length=150)
     zona = models.CharField(max_length=150)
     carga_activa = models.PositiveIntegerField(default=0)
@@ -12,9 +17,12 @@ class Perito(models.Model):
         indexes = [
             models.Index(fields=["zona", "especialidad"], name="idx_perito_zona_especialidad"),
         ]
+        constraints = [
+            models.CheckConstraint(condition=Q(carga_activa__gte=0), name="chk_perito_carga_activa"),
+        ]
 
     def __str__(self):
-        return f"{self.id} - {self.especialidad} - {self.zona}"
+        return f"{self.nombre} - {self.especialidad} - {self.zona}"
 
 
 class Inspeccion(models.Model):
@@ -28,19 +36,27 @@ class Inspeccion(models.Model):
         (CANCELADA, "Cancelada"),
     ]
 
-    id_siniestro = models.IntegerField()
-    id_perito = models.IntegerField()
-    fecha_programada = models.DateTimeField()
+    id_inspeccion = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id_siniestro = models.UUIDField()  # FK-ext -> Claims Service
+    perito = models.ForeignKey(Perito, on_delete=models.PROTECT, related_name="inspecciones", db_column="id_perito")
+    scheduled_at = models.DateTimeField()
+    completed_at = models.DateTimeField(blank=True, null=True)
+    report_url = models.TextField(blank=True, null=True)
+    findings = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PROGRAMADA)
-    informe = models.TextField(blank=True, null=True)
-    evaluacion_danos = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = "inspeccion"
         indexes = [
-            models.Index(fields=["id_perito"], name="idx_inspeccion_perito"),
+            models.Index(fields=["perito"], name="idx_inspeccion_perito"),
             models.Index(fields=["id_siniestro"], name="idx_inspeccion_siniestro"),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(status__in=["programada", "completada", "cancelada"]),
+                name="chk_inspeccion_status",
+            ),
         ]
 
     def __str__(self):
-        return f"Inspección {self.id} - Siniestro {self.id_siniestro}"
+        return f"Inspección {self.id_inspeccion} - Siniestro {self.id_siniestro}"

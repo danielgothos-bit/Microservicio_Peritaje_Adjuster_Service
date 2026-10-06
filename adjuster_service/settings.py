@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.staticfiles",
     "rest_framework",
+    "comun",
     "peritaje",
 ]
 
@@ -40,23 +41,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "adjuster_service.wsgi.application"
 
-if os.getenv("DATABASE_URL"):
-    # Render (y docker-compose) entregan la conexión en DATABASE_URL.
-    DATABASES = {"default": dj_database_url.config(conn_max_age=600)}
-    # DB_NAME permite usar una base propia (adjuster_db) dentro de un servidor compartido.
-    if os.getenv("DB_NAME"):
-        DATABASES["default"]["NAME"] = os.getenv("DB_NAME")
-else:
+# USE_SQLITE=1 permite probar el servicio sin Docker (python manage.py runserver).
+if os.getenv("USE_SQLITE") == "1":
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "adjuster_db",
-            "USER": "postgres",
-            "PASSWORD": "postgres",
-            "HOST": os.getenv("DB_HOST", "postgres"),
-            "PORT": os.getenv("DB_PORT", "5432"),
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "adjuster_db.sqlite3",
         }
     }
+else:
+    # Render (y docker-compose) entregan la conexión en DATABASE_URL.
+    DATABASES = {
+        "default": dj_database_url.config(
+            default="postgresql://postgres:postgres@postgres:5432/adjuster_db",
+            conn_max_age=600,
+        )
+    }
+    # DB_NAME permite usar una base propia dentro de un servidor PostgreSQL compartido.
+    if os.getenv("DB_NAME"):
+        DATABASES["default"]["NAME"] = os.getenv("DB_NAME")
 
 LANGUAGE_CODE = "es-co"
 TIME_ZONE = "America/Bogota"
@@ -74,4 +77,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
     "DEFAULT_PERMISSION_CLASSES": [],
+    "UNAUTHENTICATED_USER": None,
+    "EXCEPTION_HANDLER": "comun.errores.manejar_error",
+}
+
+# Módulo con los manejadores de eventos que consume este microservicio.
+EVENT_HANDLERS_MODULE = "peritaje.handlers"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"json": {"()": "comun.logs.JsonFormatter"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "root": {"handlers": ["console"], "level": os.getenv("LOG_LEVEL", "INFO")},
 }
