@@ -21,3 +21,13 @@ class PeritajeIntegracionTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Inspeccion.objects.get(pk=id_insp).status, "completada")
         self.assertEqual(publicar.call_args[0][0], "inspection.completed")
+
+
+class PeritoDisponibilidadIntegracionTests(APITestCase):
+    def test_perito_no_disponible_no_recibe_casos(self):
+        perito = Perito.objects.create(nombre="Andrés", especialidad="auto", zona="Montería")
+        resp = self.client.patch(f"/api/v1/peritos/{perito.pk}", {"disponible": False}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(Perito.objects.get(pk=perito.pk).disponible)
+        disponibles = self.client.get("/api/v1/peritos/disponibilidad", {"especialidad": "auto"}).data
+        self.assertNotIn(str(perito.pk), [str(p["id_perito"]) for p in disponibles])

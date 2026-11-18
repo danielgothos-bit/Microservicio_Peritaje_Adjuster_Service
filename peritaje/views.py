@@ -19,6 +19,17 @@ def peritos(request):
     return Response(PeritoSerializer(perito).data, status=status.HTTP_201_CREATED)
 
 
+@api_view(["GET", "PATCH"])
+def perito_detalle(request, id):
+    """Consulta o actualiza un perito. El gateway lo usa para marcarlo como no disponible al desactivar su cuenta."""
+    perito = get_object_or_404(Perito, pk=id)
+    if request.method == "PATCH":
+        serializer = PeritoSerializer(perito, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        perito = serializer.save()
+    return Response(PeritoSerializer(perito).data)
+
+
 @api_view(["GET"])
 def disponibilidad(request):
     zona = request.query_params.get("zona")

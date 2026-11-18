@@ -1,5 +1,5 @@
 EVIDENCIA DE PRUEBAS · Microservicio_Peritaje_Adjuster_Service
-Fecha: 2026-11-17 12:45
+Fecha: 2026-11-17 23:43
 Comando: USE_SQLITE=1 CELERY_EAGER=1 coverage run manage.py test -v 2
 
 Pruebas exigidas (Momento 3): tests/test_unitarias.py (2 unitarias con mocks) y tests/test_integracion.py (1 de integración).
@@ -8,10 +8,11 @@ Pruebas exigidas (Momento 3): tests/test_unitarias.py (2 unitarias con mocks) y 
 test_disponibilidad_ordena_por_carga (peritaje.tests.PeritajeTests.test_disponibilidad_ordena_por_carga) ... ok
 test_programar_y_cargar_informe (peritaje.tests.PeritajeTests.test_programar_y_cargar_informe) ... ok
 test_programar_inspeccion_y_cargar_informe (tests.test_integracion.PeritajeIntegracionTests.test_programar_inspeccion_y_cargar_informe) ... ok
+test_perito_no_disponible_no_recibe_casos (tests.test_integracion.PeritoDisponibilidadIntegracionTests.test_perito_no_disponible_no_recibe_casos) ... ok
 test_asignacion_automatica_programa_y_publica_evento (tests.test_unitarias.AsignacionUnitTests.test_asignacion_automatica_programa_y_publica_evento) ... ok
 test_elige_perito_de_la_especialidad_con_menor_carga (tests.test_unitarias.AsignacionUnitTests.test_elige_perito_de_la_especialidad_con_menor_carga) ... ok
 
-Ran 6 tests in 0.059s
+Ran 7 tests in 0.098s
 OK
 
 === Reporte de cobertura (coverage.py) ===
@@ -33,8 +34,8 @@ peritaje\models.py            35      2    94%   25, 62
 peritaje\serializers.py       16      0   100%
 peritaje\servicios.py         36      2    94%   24, 68
 peritaje\urls.py               3      0   100%
-peritaje\views.py             49      7    86%   13-19, 29
+peritaje\views.py             57      7    88%   13-19, 40
 --------------------------------------------------------
-TOTAL                        370    129    65%
+TOTAL                        378    129    66%
 
 3 empty files skipped.
